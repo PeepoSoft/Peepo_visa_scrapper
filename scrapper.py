@@ -28,14 +28,14 @@ def search_in_json(data, city):
             d1 = datetime.datetime(v[0], v[1] , v[2])
             d2 = datetime.datetime(2023, 6, 30)
             if d1 < d2: 
-                print('Cita disponible el dia {} en la ciudad de {}'.format(date, city))
+                return 'Cita disponible el dia {} en la ciudad de {}'.format(date, city)
+    return ''
         
 def log_in():
     print('Log in entered')
     if driver.current_url != BASE_URL + '/users/sign_in':
         print('We are logged!!!')
-        get_dates()
-        return
+        return get_dates()
     print('Logging in...')
     
     try:
@@ -71,24 +71,28 @@ def log_in():
     driver.find_element(By.XPATH, '/html/body/div[5]/main/div[3]/div/div[1]/div/form/p[1]/input').click()
     time.sleep(2)
     print('Login successful... Getting dates')
-    get_dates()
+    return get_dates()
    
 
 def get_dates():
-     for city in city_id.keys():
+    findings = []
+    for city in city_id.keys():
         time.sleep(2)
         driver.get(CITIES_BASE_URL + '{}.json'.format(city))
         content = driver.find_element(By.XPATH, '/html/body/pre').text
         parsed_json = json.loads(content)
         print('Dates got successfully from', city_id[city])
-        search_in_json(parsed_json, city)
+        result = search_in_json(parsed_json, city)
+        if result != '':
+            findings.append(result)
+    
+    return '' if len(findings) == 0 else '\n'.join(findings)
 
 def get_data():
     while True:
         try:
             driver.get(BASE_URL + f'/schedule/{url_id}/appointment')	
-            log_in()
-            break
+            return log_in()
         except ElementNotInteractableException:
             time.sleep(6)
 def start():
